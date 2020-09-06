@@ -1,0 +1,76 @@
+/**
+ * https://leetcode-cn.com/problems/max-sum-of-rectangle-no-larger-than-k/
+ * 363. 矩形区域不超过 K 的最大数值和
+ * 给定一个非空二维矩阵 matrix 和一个整数 k，找到这个矩阵内部不大于 k 的最大矩形和。
+ *
+ * 示例:
+ *
+ * 输入: matrix = [[1,0,1],[0,-2,3]], k = 2
+ * 输出: 2
+ * 解释: 矩形区域 [[0, 1], [-2, 3]] 的数值和是 2，且 2 是不超过 k 的最大数字（k = 2）。
+ * 说明：
+ *
+ * 矩阵内的矩形区域面积必须大于 0。
+ * 如果行数远大于列数，你将如何解答呢？
+ *
+ */
+class Solution {
+    public int maxSumSubmatrix(int[][] matrix, int k) {
+        if(matrix == null || matrix.length == 0) {
+            return -1;
+        }
+        int m = matrix.length, n = matrix[0].length;
+        int[] sums = new int[m + 1];
+        int ans = Integer.MIN_VALUE;
+        int i, j, s;
+
+        for(i = 0; i < n; i++) {
+            int[] A = new int[m]; // 易错点: A 从 i 固定开始是一个新的
+            for(j = i; j < n; j++) {
+                int max = Integer.MIN_VALUE, sub = 0;
+                for(s = 0; s < m; s++) {
+                    A[s] += matrix[s][j];
+                    sums[s + 1] = sums[s] + A[s];
+                    // Kadane Algo maximum subarray sum
+                    sub = Math.max(sub + A[s], A[s]);
+                    max = Math.max(max, sub);
+                }
+                if(max <= k) { // 子数组最大和大于 k 才去搜寻所有组合
+                    ans = Math.max(ans, max);
+                }else {
+                    ans = Math.max(ans, mergeSort(sums, 0, m, k));
+                }
+            }
+        }
+        return ans;
+    }
+
+    private int mergeSort(int[] sum, int start, int end, int k) {
+        if(start >= end) {
+            return Integer.MIN_VALUE;
+        }
+        int mid = start + (end - start) / 2;
+        int ans = mergeSort(sum, start, mid, k); // 易错点，这里用 mid - 1，当start,end 相邻时，right[mid,end] 会爆栈
+        if(ans == k) {
+            return ans;
+        }
+        ans = Math.max(ans, mergeSort(sum, mid + 1, end, k));
+        if(ans == k) {
+            return ans;
+        }
+
+        int[] temp = new int[end - start + 1];
+        int i, j = mid + 1, t = 0;
+        int p = mid + 1;
+        for(i = start; i <= mid; i++) {
+            while(p <= end && sum[p] - sum[i] <= k) {
+                ans = Math.max(ans, sum[p] - sum[i]);
+                p++;
+            }
+            while(j <= end && sum[j] < sum[i]) temp[t++] = sum[j++];
+            temp[t++] = sum[i];
+        }
+        System.arraycopy(temp, 0, sum, start, t);
+        return ans;
+    }
+}
