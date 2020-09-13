@@ -1,0 +1,79 @@
+/**
+ * https://leetcode-cn.com/problems/surrounded-regions/
+ * 130. 被围绕的区域
+ * 给定一个二维的矩阵，包含 'X' 和 'O'（字母 O）。
+ *
+ * 找到所有被 'X' 围绕的区域，并将这些区域里所有的 'O' 用 'X' 填充。
+ *
+ * 示例:
+ *
+ * X X X X
+ * X O O X
+ * X X O X
+ * X O X X
+ * 运行你的函数后，矩阵变为：
+ *
+ * X X X X
+ * X X X X
+ * X X X X
+ * X O X X
+ * 解释:
+ *
+ * 被围绕的区间不会存在于边界上，换句话说，任何边界上的 'O' 都不会被填充为 'X'。 任何不在边界上，或不与边界上的 'O' 相连的 'O' 最终都会被填充为 'X'。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。
+ */
+class Solution {
+    int m = 0;  // 行数
+    int n = 0;  // 列数
+    public void solve(char[][] board) {
+        // java二维矩阵的行数和列数可能不同，并且每一行的列数可能都不一样
+        // 但是肯定是先后行再有列，而且根据题目要求，在这里每一行的列数都是相同的
+        m = board.length;       //  行数m
+        if (m == 0) {   // 行数为0，board为空
+            return;
+        }
+        n = board[0].length;    // 列数
+        // 搜索上下边界的'O'
+        for (int i = 0; i < n; i++) {
+            if (board[0][i] == 'O') {   //  第一行
+                DFS(board, 0, i);   // 标记
+            }
+            if (board[m - 1][i] == 'O') {      // 最后一行
+                DFS(board, m - 1, i);   // 标记
+            }
+        }
+        // 搜索左右边界
+        for (int i = 1; i < m - 1; i++) {
+            if (board[i][0] == 'O') {   // 第一列
+                DFS(board, i, 0);       // 标记
+            }
+            if (board[i][n - 1] == 'O') {   // 最后一列
+                DFS(board, i, n - 1);   // 标记
+            }
+        }
+        // 标记完，再次遍历，现在矩阵中可能有3中字符，'X','M','O'
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] == 'X') {
+                    continue;
+                } else if (board[i][j] == 'O'){ // 出现没被标记过的'O'，应该被填充
+                    board[i][j] = 'X';
+                } else if (board[i][j] == 'M'){ // 被标记过的，不应该被填充，恢复
+                    board[i][j] = 'O';
+                }
+            }
+        }
+    }
+
+    public void DFS(char[][] board, int x, int y) {
+        // 越界或者不是字符'O'终止
+        if (x < 0 || x >= m || y < 0 || y >= n || board[x][y] != 'O') {
+            return;
+        }
+        board[x][y] = 'M';  // 修改为'M'表示这个字符被标记了
+        // 搜索四个方向
+        DFS(board, x - 1, y);   // 上
+        DFS(board, x + 1, y);   // 下
+        DFS(board, x, y - 1);   // 左
+        DFS(board, x, y + 1);   // 右
+    }
+}
